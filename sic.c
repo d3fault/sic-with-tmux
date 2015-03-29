@@ -25,7 +25,7 @@ static FILE *srv;
 #include "util.c"
 
 static void
-pout(char *channel, char *fmt, ...) {
+pout(FILE *o, char *channel, char *fmt, ...) {
 	static char timestr[80];
 	time_t t;
 	va_list ap;
@@ -35,7 +35,7 @@ pout(char *channel, char *fmt, ...) {
 	va_end(ap);
 	t = time(NULL);
 	strftime(timestr, sizeof timestr, TIMESTAMP_FORMAT, localtime(&t));
-	fprintf(stdout, "%-12s: %s %s\n", channel, timestr, bufout);
+	fprintf(o, "%s : %s %s\n", channel, timestr, bufout);
 }
 
 static void
@@ -51,10 +51,10 @@ sout(char *fmt, ...) {
 static void
 privmsg(char *channel, char *msg) {
 	if(channel[0] == '\0') {
-		pout("", "No channel to send to");
+		pout(stdout, "", "No channel to send to");
 		return;
 	}
-	pout(channel, "<%s> %s", nick, msg);
+	pout(stdout, channel, "<%s> %s", nick, msg);
 	sout("PRIVMSG %s :%s", channel, msg);
 }
 
@@ -125,11 +125,11 @@ parsesrv(char *cmd) {
 	if(!strcmp("PONG", cmd))
 		return;
 	if(!strcmp("PRIVMSG", cmd))
-		pout(par, "<%s> %s", usr, txt);
+		pout(stdout, par, "<%s> %s", usr, txt);
 	else if(!strcmp("PING", cmd))
 		sout("PONG %s", txt);
 	else {
-		pout(usr, ">< %s (%s): %s", cmd, par, txt);
+		pout(stderr, usr, ">< %s (%s): %s", cmd, par, txt);
 		if(!strcmp("NICK", cmd) && !strcmp(usr, nick))
 			strlcpy(nick, txt, sizeof nick);
 	}

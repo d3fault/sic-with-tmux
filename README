@@ -20,3 +20,17 @@ Afterwards enter the following command to build and install sic
 Running sic
 -----------
 Simply invoke the 'sic' command with the required arguments.
+
+
+[OPTIONAL] Using sic with tmux to redirect system messages to a dedicated pane, as well a dedicated pane for showing messages that mention your username
+------------------------------
+Start a tmux session and 3 panes.
+In the 1st tmux pane, type the following command after replacing USER/PASS with your user (note, USER appears twice in below command):
+    sic -n USER -k PASS 2> /run/shm/ircSystemMessages.txt | tee >(grep -i --line-buffered USER > /run/shm/usernameMentions.txt)
+In the 2nd tmux pane, type:
+    tail -f /run/shm/ircSystemMessages.txt
+In the 3rd tmux pane, type:
+    tail -f /run/shm/usernameMentions.txt
+
+Note: you can replace /run/shm/ircSystemMessages.txt with /dev/null if you don't want to receive any system messages.
+It may be a good idea to periodically truncate those two extra files by simply doing "echo > /run/shm/ircSystemMessages.txt".
